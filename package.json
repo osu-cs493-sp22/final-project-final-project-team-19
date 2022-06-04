@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/osu-cs493-sp22/final-project-final-project-team-19#readme",
   "dependencies": {
-    "express": "^4.18.1"
+    "bcrypt": "^5.0.1",
+    "express": "^4.18.1",
+    "mongoose": "^6.3.5"
   },
   "devDependencies": {
     "nodemon": "^2.0.16"
