@@ -1,0 +1,24 @@
+version: '3'
+services:
+  api:
+    build: .
+    environment: 
+      - DB_USERNAME=root
+      - DB_PASSWORD=hunter2
+      - DB_HOSTNAME=mongodb
+      - DB_PORT=27017
+      - DB_NAME=final-project
+      - PORT=8000
+    ports:
+      - 8000:8000
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=hunter2
+      - MONGO_INITDB_DATABASE=final-project
+      - MONGO_USERNAME=admin
+      - MONGO_PASSWORD=hunter2
+    ports: # this is removable in production building
+      - 27017:27017
