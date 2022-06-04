@@ -5,8 +5,7 @@ const assignmentSchema = new Schema({
         type: {
             type: Schema.Types.ObjectId,
             ref: 'Course'
-        },
-        required: true
+        }
     },
     title: {
         type: String,
