@@ -1,4 +1,6 @@
 const { Router } = require('express')
+const { requireAuthentication } = require('../lib/auth')
+const { Course } = require('../models/course')
 
 const router = Router()
 
@@ -9,8 +11,37 @@ const router = Router()
  * of students in the Course or the list of Assignments for the
  * Course.
 */ 
-router.get("/", (req, res, next) => {
-    // TODO: Implement
+router.get("/", async (req, res, next) => {
+    const courses = await Course.find().select('subject number title term instructorId')
+
+    let page = parseInt(req.query.page) || 1;
+    const numPerPage = 10;
+    const lastPage = Math.ceil(courses.length / numPerPage);
+    page = page > lastPage ? lastPage : page;
+    page = page < 1 ? 1 : page;
+
+    const start = (page - 1) * numPerPage;
+    const end = start + numPerPage;
+    const pageCourses = courses.slice(start, end);
+
+    const links = {};
+    if (page < lastPage) {
+      links.nextPage = `/courses?page=${page + 1}`;
+      links.lastPage = `/courses?page=${lastPage}`;
+    }
+    if (page > 1) {
+      links.prevPage = `/courses?page=${page - 1}`;
+      links.firstPage = '/courses?page=1';
+    }
+
+    res.status(200).json({
+        courses: pageCourses,
+        pageNumber: page,
+        totalPages: lastPage,
+        pageSize: numPerPage,
+        totalCount: courses.length,
+        links: links
+    });
 })
 
 // Create a new course
@@ -19,8 +50,40 @@ router.get("/", (req, res, next) => {
  * application's database. Only an authenticated User with
  * 'admin' role can create a new Course.
  */
-router.post("/", (req, res, next) => {
-    // TODO: Implement
+router.post("/", requireAuthentication, async (req, res, next) => {
+    if(req.user.role == 'admin') {
+        const newCourse = new Course(req.body)
+        let error = newCourse.validateSync();
+
+        if(!error) {
+            const courses = await Course.find({
+                subject: newCourse.subject,
+                number: newCourse.number,
+                term: newCourse.term
+            })
+            // check if there's an existing course with the same subject, number, and term
+            if (courses.length <= 0) {
+                await newCourse.save()
+                res.status(201).send({
+                    id: newCourse._id
+                })
+            } else {
+                res.status(400).send({
+                    error: "A course with the given details already exists"
+                })
+            }
+
+        } else {
+            res.status(400).send({
+                error: "Request body does not contain a valid Course object"
+            })
+        }
+
+    } else {
+        res.status(403).send({
+            error: "You are not authorized to access this resource"
+        })
+    }
 })
 
 // Fetch data about a specific course
@@ -29,8 +92,18 @@ router.post("/", (req, res, next) => {
  * students enrolled in the course and the list of Assignments
  * for the course.
  */
-router.get("/:courseId", (req, res, next) => {
-    // TODO: Implement
+router.get("/:courseId", async (req, res, next) => {
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findOne({ _id: req.params.courseId }).select('subject number title term instructorId')
+
+        if (course) {
+            res.status(200).send(course)
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Update data for a specific Course.
@@ -41,8 +114,51 @@ router.get("/:courseId", (req, res, next) => {
  * role or an authenticated 'instructor' User whose ID matches
  * the instructorId of the Course can update Course information.
  */
-router.patch("/:courseId", (req, res, next) => { 
-    // TODO: Implement
+router.patch("/:courseId", requireAuthentication, async (req, res, next) => { 
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId)
+
+        if (course) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                const updatedCourse = new Course(req.body)
+                let error = updatedCourse.validateSync()
+
+                if(!error) {
+                    const courses = await Course.find({
+                        subject: updatedCourse.subject,
+                        number: updatedCourse.number,
+                        term: updatedCourse.term
+                    })
+                    if (courses.length == 0) {
+                        await Course.findByIdAndUpdate(req.params.courseId, 
+                            { 
+                                subject: updatedCourse.subject,
+                                number: updatedCourse.number,
+                                title: updatedCourse.title,
+                                term: updatedCourse.term
+                            })
+                        res.status(200).send()
+                    } else {
+                        res.status(400).send({
+                            error: "A course with these details already exists"
+                        })
+                    }
+                } else {
+                    res.status(400).send({
+                        error: "The request body must contain a valid Course object"
+                    })
+                }
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Remove a specific Course from the database.
@@ -51,8 +167,25 @@ router.patch("/:courseId", (req, res, next) => {
  * including all enrolled students, all Assignments, etc. Only
  * an authenticated User with 'admin' role can remove a Course.
  */
-router.delete("/:courseId", (req, res, next) => {
-    // TODO: Implement
+router.delete("/:courseId", requireAuthentication, async (req, res, next) => {
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId)
+
+        if (course) {
+            if (req.user.role == 'admin') {
+                await Course.findByIdAndRemove(req.params.courseId)
+                res.status(204).send()
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Fetch a list of the students enrolled in the Course.
@@ -63,8 +196,24 @@ router.delete("/:courseId", (req, res, next) => {
  * ID matches the instructorId of the Course can fetch the list
  * of enrolled students.
  */
-router.get("/:courseId/students", (req, res, next) => {
-    // TODO: Implement
+router.get("/:courseId/students", requireAuthentication, async (req, res, next) => {
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('students')
+
+        if (course) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                res.status(200).send(course)
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to access this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Update enrollment for a Course.
@@ -74,7 +223,7 @@ router.get("/:courseId/students", (req, res, next) => {
  * 'instructor' User whose ID matches the instructorId of the
  * Course can update the students enrolled in the Course.
  */
-router.post("/:courseId/students", (req, res, next) => {
+router.post("/:courseId/students", requireAuthentication, (req, res, next) => {
     // TODO: Implement
 })
 
@@ -87,7 +236,7 @@ router.post("/:courseId/students", (req, res, next) => {
  * matches the instructorId of the Course can fetch the course
  * roster.
  */
-router.get("/:courseId/roster", (req, res, next) => {
+router.get("/:courseId/roster", requireAuthentication, (req, res, next) => {
     // TODO: Implement
 })
 
