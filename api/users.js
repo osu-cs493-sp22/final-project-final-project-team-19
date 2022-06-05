@@ -3,7 +3,7 @@ const { Router } = require('express')
 
 const router = Router()
 
-const { requireAuthentication, generateAuthToken } = require('../lib/auth')
+const { requireAuthentication, generateAuthToken, softAuthentication } = require('../lib/auth')
 const { userSchema, User } = require('../models/user')
 
 // Create a new User
@@ -13,7 +13,7 @@ const { userSchema, User } = require('../models/user')
  * User with 'admin' role can create users with the 'admin' or 
  * 'instructor' roles. 
  */
-router.post('/', async (req, res, next) => {
+router.post('/', softAuthentication, async (req, res, next) => {
     // TODO: check for admin role w/ new admin & instructor users
 
     const newUser = new User(req.body)
@@ -34,13 +34,16 @@ router.post('/', async (req, res, next) => {
                 id: newUser._id
             })
 
-        } else { // TODO: require auth if creating instructor or admin
+        } else if (req.user && req.user.role == "admin") { // Consider disabling this if no admins exist in db yet
             await newUser.save()
             // console.log(users)
             res.status(201).send({
                 id: newUser._id
             })
-
+        } else {
+            res.status(403).send({
+                error: "You do not have permission to create a user with this role"
+            })
         }
     } else {
         res.status(400).send({
