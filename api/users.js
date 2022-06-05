@@ -100,16 +100,8 @@ router.get("/:userId", requireAuthentication, async (req, res, next) => {
     const user = await User.find({ _id: req.params.userId })
 
     if (user.length == 1) {
-        if(req.user.role == 'instructor') {
-            // TODO: add the courses the student is in that the instructor teaches
-            res.status(200).send({
-                user: user[0].name,
-                email: user[0].email,
-                password: user[0].password,
-                role: user[0].role
-            })
-        } else if (req.user._id == req.params.userId) {
-            // TODO: add the courses the student is in
+        if(req.user.role == 'admin' || req.user._id == req.params.userId) {
+            // TODO: split up by instructor and student, return their corresponding courses
             res.status(200).send({
                 user: user[0].name,
                 email: user[0].email,
