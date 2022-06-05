@@ -20,23 +20,23 @@ router.post('/', async (req, res, next) => {
     let error = newUser.validateSync();
     
     if(!error) {
-        const users = await User.find({ email: newUser.email});
+        const existingUser = await User.findOne({ email: newUser.email});
         // check if there's an existing user with the given email
-        if (users.length > 0) {
+        if (existingUser) {
             res.status(400).send({
                 error: "A user with that email already exists"
             })
 
         } else if (newUser.role == "student") { // create student with no auth
             await newUser.save()
-            console.log(users)
+            // console.log(users)
             res.status(201).send({
                 id: newUser._id
             })
 
         } else { // TODO: require auth if creating instructor or admin
             await newUser.save()
-            console.log(users)
+            // console.log(users)
             res.status(201).send({
                 id: newUser._id
             })
@@ -58,16 +58,16 @@ router.post("/login", async (req, res, next) => {
     if (req.body && req.body.email && req.body.password ) {
 
         // find the user with a matching email, if any
-        const user = await User.find({ email: req.body.email })
+        const user = await User.findOne({ email: req.body.email })
 
         // check if the credentials are valid
-        const validCredentials = (user.length == 1) && await bcrypt.compare(
+        const validCredentials = (user) && await bcrypt.compare(
             req.body.password,
-            user[0].password
+            user.password
         )
 
         if (validCredentials) {
-            const token = generateAuthToken(String(user[0]._id))
+            const token = generateAuthToken(String(user._id))
             res.status(200).send({
                 token: token
             })
@@ -96,27 +96,25 @@ router.post("/login", async (req, res, next) => {
  *  User can fetch this information.
  */
 router.get("/:userId", requireAuthentication, async (req, res, next) => {
-    console.log(req.user)
-    const user = await User.find({ _id: req.params.userId })
+    if(req.params.userId.length == 24) {
+        const user = await User.findById(req.params.userId).select('user email password role')
+        console.log(user)
 
-    if (user.length == 1) {
-        if(req.user.role == 'admin' || req.user._id == req.params.userId) {
-            // TODO: split up by instructor and student, return their corresponding courses
-            res.status(200).send({
-                user: user[0].name,
-                email: user[0].email,
-                password: user[0].password,
-                role: user[0].role
-            })
+        if (user) {
+            if(req.user.role == 'admin' || req.user._id == req.params.userId) {
+                // TODO: split up by instructor and student, return their corresponding courses
+                res.status(200).send(user)
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to access this resource"
+                })
+            }
         } else {
-            res.status(403).send({
-                error: "You are not authorized to access this resource"
-            })
+            next()
         }
     } else {
         next()
     }
 
-    
 })
 module.exports = router
