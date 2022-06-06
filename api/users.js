@@ -4,6 +4,7 @@ const { Router } = require('express')
 const router = Router()
 
 const { requireAuthentication, generateAuthToken, softAuthentication } = require('../lib/auth')
+const { Course } = require('../models/course')
 const { userSchema, User } = require('../models/user')
 
 // Create a new User
@@ -105,8 +106,47 @@ router.get("/:userId", requireAuthentication, async (req, res, next) => {
 
         if (user) {
             if(req.user.role == 'admin' || req.user._id == req.params.userId) {
-                // TODO: split up by instructor and student, return their corresponding courses
-                res.status(200).send(user)
+                
+                if(user.role == 'instructor') {
+                    let courseList = []
+                    const courses = await Course.find({ instructorId: user._id }).select('_id')
+                    // console.log(courses)
+
+                    courses.forEach(element => {
+                        courseList.push(element._id)
+                    });
+
+                    // console.log(courseList)
+
+                    res.status(200).send({
+                        id: user._id,
+                        name: user.name,
+                        email: user.email,
+                        password: user.password,
+                        role: user.role,
+                        courses: courseList
+                    })
+                } else if (user.role == 'student') {
+                    let courseList = []
+                    const courses = await Course.find({ students: user._id }).select('_id')
+                    // console.log("=== courses: ", courses)
+
+                    courses.forEach(element => {
+                        courseList.push(element._id)
+                    });
+
+                    res.status(200).send({
+                        id: user._id,
+                        name: user.name,
+                        email: user.email,
+                        password: user.password,
+                        role: user.role,
+                        courses: courseList
+                    })
+                } else {
+                    res.status(200).send(user)
+                }
+
             } else {
                 res.status(403).send({
                     error: "You are not authorized to access this resource"

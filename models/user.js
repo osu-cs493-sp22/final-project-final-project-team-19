@@ -20,7 +20,7 @@ const userSchema = new Schema({
     role: {
         type: String,
         required: true,
-        enum: ['student', 'teacher', 'admin'], // verify role is valid
+        enum: ['student', 'instructor', 'admin'], // verify role is valid
         default: 'student'
     }
 })
