@@ -291,7 +291,17 @@ router.get("/:courseId/roster", requireAuthentication, (req, res, next) => {
  * Assignments for the Course.
  */
 router.get("/:courseId/assignments", (req, res, next) => {
-    // TODO: Implement
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('assignments')
+
+        if (course) {
+            res.status(200).send(course.assignments)
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 module.exports = router
