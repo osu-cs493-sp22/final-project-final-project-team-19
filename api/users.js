@@ -15,7 +15,7 @@ const { userSchema, User } = require('../models/user')
  * 'instructor' roles. 
  */
 router.post('/', softAuthentication, async (req, res, next) => {
-    // TODO: check for admin role w/ new admin & instructor users
+    // TODO: verify role restrictions for creating users
 
     const newUser = new User(req.body)
     let error = newUser.validateSync();
@@ -93,11 +93,11 @@ router.post("/login", async (req, res, next) => {
  * Returns information about the specified User. If the User has
  * the 'instructor' role, the response should include a list of
  * the IDs of the Courses the User teaches (i.e. Courses whose
- *  instructorId field matches the ID of this User). If the User
- *  has the 'student' role, the response should include a list
- *  of the IDs of the Courses the User is enrolled in. Only an
- *  authenticated User whose ID matches the ID of the requested
- *  User can fetch this information.
+ * instructorId field matches the ID of this User). If the User
+ * has the 'student' role, the response should include a list
+ * of the IDs of the Courses the User is enrolled in. Only an
+ * authenticated User whose ID matches the ID of the requested
+ * User can fetch this information.
  */
 router.get("/:userId", requireAuthentication, async (req, res, next) => {
     if(req.params.userId.length == 24) {
@@ -134,7 +134,6 @@ router.get("/:userId", requireAuthentication, async (req, res, next) => {
                     courses.forEach(element => {
                         courseList.push(element._id)
                     });
-
                     res.status(200).send({
                         id: user._id,
                         name: user.name,
