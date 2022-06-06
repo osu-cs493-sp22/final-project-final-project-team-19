@@ -18,7 +18,7 @@ const router = Router()
  */
 router.post("/", requireAuthentication , async (req, res, next) => {
     if (req.body.courseId.length == 24) {
-        const course = await Course.findById(req.params.courseId)
+        const course = await Course.findById(req.body.courseId)
         if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
             const newAssignment = new Assignment(req.body)
             let error = newAssignment.validateSync()
@@ -83,8 +83,50 @@ router.get("/:assignmentId", async (req, res, next) => {
  * instructorId of the Course corresponding to the Assignment's
  * courseId can update an Assignment.
  */
-router.patch("/:assignmentId", (req, res, next) => {
-    // TODO: Implement
+router.patch("/:assignmentId", requireAuthentication, async (req, res, next) => {
+    if (req.params.assignmentId.length == 24 && req.body.courseId.length == 24) {
+        const course = await Course.findById(req.body.courseId)
+        const assignment = await Assignment.findById(req.params.assignmentId)
+        if (course && assignment) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                const updatedAssignment = new Assignment(req.body)
+                let error = updatedAssignment.validateSync() 
+
+                if (!error) {
+                    const assignments = await Assignment.find({
+                        title: updatedAssignment.title,
+                        points: updatedAssignment.points,
+                        due: updatedAssignment.due
+                    })
+                    if (assignments.length == 0) {
+                        await Assignment.findByIdAndUpdate(req.params.assignmentId, 
+                            { 
+                                title: updatedAssignment.title,
+                                points: updatedAssignment.points,
+                                due: updatedAssignment.due
+                            })
+                        res.status(200).send()
+                    } else {
+                        res.status(400).send({
+                            error: "A duplicate assignment with these details already exists"
+                        })
+                    }
+                } else {
+                    res.status(400).send({
+                        error: "The request body must contain a valid Assignment object"
+                    })
+                }
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Remove a specific Assignment from the database.
@@ -95,8 +137,28 @@ router.patch("/:assignmentId", (req, res, next) => {
  * matches the instructorId of the Course corresponding to the
  * Assignment's courseId can delete an Assignment.
  */
-router.delete("/:assignmentId", (req, res, next) => {
-    // TODO: Implement
+router.delete("/:assignmentId", requireAuthentication, async (req, res, next) => {
+    if (req.params.assignmentId.length == 24) {
+        const assignment = await Assignment.findById(req.params.assignmentId)
+
+        if (assignment) {
+            const courseId = assignment.courseId
+            const course = await Course.findById(courseId)
+
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                await Assignment.findByIdAndRemove(req.params.assignmentId)
+                res.status(204).send()
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Fetch a list of the Assignments for a specific Course.
