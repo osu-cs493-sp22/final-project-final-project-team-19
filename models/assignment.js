@@ -1,4 +1,4 @@
-const { Schema, model } = require('mongoose');
+const { Schema, mongoose } = require('mongoose');
 
 const assignmentSchema = new Schema({
     courseId: {
@@ -22,5 +22,5 @@ const assignmentSchema = new Schema({
 });
 exports.assignmentSchema = assignmentSchema;
 
-const Assignment = model('Assignment', assignmentSchema);
+const Assignment = mongoose.model('Assignment', assignmentSchema);
 exports.Assignment = Assignment;

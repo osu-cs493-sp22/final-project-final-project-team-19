@@ -1,4 +1,9 @@
 const { Router } = require('express')
+const { requireAuthentication } = require('../lib/auth')
+const { Assignment } = require('../models/assignment')
+const { Course } = require('../models/course')
+const { User } = require('../models/user')
+
 
 const router = Router()
 
@@ -11,8 +16,41 @@ const router = Router()
  * Course corresponding to the Assignment's courseId can create
  * an Assignment.
  */
-router.post("/", (req, res, next) => {
-    // TODO: Implement
+router.post("/", requireAuthentication , async (req, res, next) => {
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId)
+        if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+            const newAssignment = new Assignment(req.body)
+            let error = newAssignment.validateSync()
+
+            if (!error) {
+                const assignments = await Assignment.find({
+                    title: newAssignment.title,
+                    points: newAssignment.points,
+                    due: newAssignment.due
+                })
+
+                if (assignments.length <= 0) {
+                    await newAssignment.save()
+                    res.status(201).send({
+                        id: newAssignment._id
+                    })
+                } else {
+                    res.status(400).send({
+                        error: "A duplicate assignment already exists"
+                    })
+                }
+            } else {
+                res.status(400).send({
+                    error: "The request body was either not present or did not contain a valid Assignment object."
+                })
+            }
+        } else {
+            res.status(403).send({
+                error: "You are not an authorized user to access this resource"
+            })
+        }
+    }
 })
 
 // Fetch data about a specific Assignment
@@ -20,8 +58,18 @@ router.post("/", (req, res, next) => {
  * Returns summary data about the Assignment, excluding the list
  * of Submissions.
  */
-router.get("/:assignmentId", (req, res, next) => {
-    // TODO: Implement
+router.get("/:assignmentId", async (req, res, next) => {
+    if (req.params.assignmentId.length == 24) {
+        const assignment = await Assignment.findOne({ _id: req.params.assignmentId }).select('title points due')
+
+        if (assignment) {
+            res.status(200).send(assignment)
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Update data for a specific Assignment
