@@ -1,10 +1,63 @@
 const express = require('express')
 const { connect } = require('./lib/mongoose')
+const redis = require('redis')
+
 
 const api = require('./api')
 
 const app = express()
 const port = process.env.PORT || 8000
+
+// redis env variables
+const redisHost = process.env.REDIS_HOST || 'redis'
+const redisPort = process.env.REDIS_PORT || 6379
+const redisUser = process.env.REDIS_USER || 'default';
+const redisPassword = process.env.REDIS_PASSWORD || 'hunter2';
+
+// TO-DO: move rateLimit function and other redis code to redis.js?
+const redisClient = redis.createClient({
+  url: `redis://${redisUser}:${redisPassword}@${redisHost}:${redisPort}`
+})
+
+const rateLimitMaxRequests = 15
+const rateLimitWindowMs = 60000
+
+/*
+* Rate limiting function that works by a token bucket algorithm
+* Max of 15 requests per window
+* Error if too many requests are made
+*/
+async function rateLimit(req, res, next) {
+  const ip = req.ip
+
+  let tokenBucket = await redisClient.hGetAll(ip)
+  // console.log("== tokenBucket:", tokenBucket)
+  tokenBucket = {
+    tokens: parseFloat(tokenBucket.tokens) || rateLimitMaxRequests,
+    last: parseInt(tokenBucket.last) || Date.now()
+  }
+  // console.log("== tokenBucket:", tokenBucket)
+
+  const now = Date.now()
+  const ellapsedMs = now - tokenBucket.last
+  tokenBucket.tokens += ellapsedMs * (rateLimitMaxRequests / rateLimitWindowMs)
+  tokenBucket.tokens = Math.min(rateLimitMaxRequests, tokenBucket.tokens)
+  tokenBucket.last = now
+
+  if (tokenBucket.tokens >= 1) {
+    tokenBucket.tokens -= 1
+    await redisClient.hSet(ip, [['tokens', tokenBucket.tokens], ['last', tokenBucket.last]])
+    next()
+  } else {
+    await redisClient.hSet(ip, [['tokens', tokenBucket.tokens], ['last', tokenBucket.last]])
+    res.status(429).send({
+      err: "Too many requests per minute"
+    })
+  }
+}
+
+// rate limiting on request from ip address scale
+app.use(rateLimit)
 
 app.use(express.json());
 
@@ -31,6 +84,10 @@ app.use('*', function (err, req, res, next) {
       err: "Server error.  Please try again later."
   })
 })
+
+// connect to redisClient 
+console.log(`=== Connecting to redis://${redisUser}:${redisPassword}@${redisHost}:${redisPort}`);
+redisClient.connect()
 
 connect(() => {
     app.listen(port, () => {

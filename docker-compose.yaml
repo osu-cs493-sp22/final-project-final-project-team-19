@@ -8,6 +8,10 @@ services:
       - DB_HOSTNAME=mongodb
       - DB_PORT=27017
       - DB_NAME=final-project
+      - REDIS_HOST=redis
+      - REDIS_USER=default
+      - REDIS_PASSWORD=hunter2
+      - REDIS_PORT=6379
       - PORT=8000
     ports:
       - 8000:8000
@@ -22,3 +26,11 @@ services:
       - MONGO_PASSWORD=hunter2
     ports: # this is removable in production building
       - 27017:27017
+  redis:
+    image: redis:latest
+    environment: 
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - 6379:6379 
+
