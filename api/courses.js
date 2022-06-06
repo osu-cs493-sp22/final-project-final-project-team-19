@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const { requireAuthentication } = require('../lib/auth')
 const { Course } = require('../models/course')
+const { User } = require('../models/user')
 
 const router = Router()
 
@@ -264,14 +265,25 @@ router.post("/:courseId/students", requireAuthentication, (req, res, next) => {
  * matches the instructorId of the Course can fetch the course
  * roster.
  */
-router.get("/:courseId/roster", requireAuthentication, (req, res, next) => {
+router.get("/:courseId/roster", requireAuthentication, async (req, res, next) => {
     // TODO: Implement
     if (req.params.courseId.length == 24) {
         const course = await Course.findById(req.params.courseId).select('students')
 
         if (course) {
             if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                let students = ''
 
+                course.students.array.forEach(element => {
+                    const student = await User.findById(element)
+                    students += `${student._id},${student.name},${student.email}\n`
+                });
+
+                // TODO: convert string to csv file
+                console.log(students)
+                res.status(200).send({
+                    students: students
+                })
             } else {
                 res.status(403).send({
                     error: "You are not authorized to modify this resource"
