@@ -224,7 +224,35 @@ router.get("/:courseId/students", requireAuthentication, async (req, res, next) 
  * Course can update the students enrolled in the Course.
  */
 router.post("/:courseId/students", requireAuthentication, (req, res, next) => {
-    // TODO: Implement
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('students')
+
+        if (course) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                if (req.body.add && req.body.remove) {
+                    var students = course.students.filter(e => !req.body.remove.includes(e) )
+
+                    students.push(req.body.add)
+
+                    await Course.findByIdAndUpdate(req.params.courseId, { students: students })
+                    
+                    res.status(200).send()
+                } else {
+                    res.status(400).send({
+                        error: "The request body must include an add and remove item"
+                    })
+                }
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Fetch a CSV file containing list of the students enrolled in the Course.
@@ -238,6 +266,23 @@ router.post("/:courseId/students", requireAuthentication, (req, res, next) => {
  */
 router.get("/:courseId/roster", requireAuthentication, (req, res, next) => {
     // TODO: Implement
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('students')
+
+        if (course) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Fetch a list of the Assignments for the Course.
