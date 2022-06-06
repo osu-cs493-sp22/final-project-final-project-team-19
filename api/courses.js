@@ -2,6 +2,7 @@ const { Router } = require('express')
 const { requireAuthentication } = require('../lib/auth')
 const { Course } = require('../models/course')
 const { User } = require('../models/user')
+const { Types } = require('mongoose')
 
 const router = Router()
 
@@ -231,12 +232,11 @@ router.post("/:courseId/students", requireAuthentication, async (req, res, next)
         if (course) {
             if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
                 if (req.body.add && req.body.remove) {
-                    var students = course.students.filter(e => !req.body.remove.includes(e) )
-
-                    students.push(req.body.add)
-
-                    await Course.findByIdAndUpdate(req.params.courseId, { students: students })
-                    
+                    const addIds = req.body.add.map(id => Types.ObjectId(id))
+                    const removeIds = req.body.remove.map(id => Types.ObjectId(id))
+                    console.log(removeIds)
+                    await Course.findByIdAndUpdate(req.params.courseId, {$addToSet: {students: {$each: addIds}}})
+                    await Course.findByIdAndUpdate(req.params.courseId, {$pull: {students: {$in: removeIds}}})
                     res.status(200).send()
                 } else {
                     res.status(400).send({
@@ -266,25 +266,23 @@ router.post("/:courseId/students", requireAuthentication, async (req, res, next)
  * roster.
  */
 router.get("/:courseId/roster", requireAuthentication, async (req, res, next) => {
-    // TODO: Implement
     if (req.params.courseId.length == 24) {
         const course = await Course.findById(req.params.courseId).select('students')
 
         if (course) {
             if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
                 let students = ''
-
-                // course.students.array.forEach(element => {
+                
                 for (const student of course.students) {
                     const studentDetails = await User.findById(student)
-                    students += `${studentDetails._id},${studentDetails.name},${studentDetails.email}\n`
+                    if (studentDetails) {
+                        students += `${studentDetails._id},${studentDetails.name},${studentDetails.email}\n`
+                    } else {
+                        console.error(`Student ${student} not found`)
+                    }
                 };
 
-                // console.log(students)
-
-                // TODO (maybe?) switch to actually send a file instead of text
-                res.type('text/csv')
-                res.status(200).send(students)
+                res.status(200).attachment("roster.csv").send(students)
             } else {
                 res.status(403).send({
                     error: "You are not authorized to modify this resource"
