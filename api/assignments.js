@@ -50,6 +50,8 @@ router.post("/", requireAuthentication , async (req, res, next) => {
                 error: "You are not an authorized user to access this resource"
             })
         }
+    } else {
+        next()
     }
 })
 
