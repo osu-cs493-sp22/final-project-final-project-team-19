@@ -17,7 +17,7 @@ const router = Router()
  * an Assignment.
  */
 router.post("/", requireAuthentication , async (req, res, next) => {
-    if (req.params.courseId.length == 24) {
+    if (req.body.courseId.length == 24) {
         const course = await Course.findById(req.params.courseId)
         if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
             const newAssignment = new Assignment(req.body)
