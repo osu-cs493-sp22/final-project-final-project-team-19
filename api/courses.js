@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const { requireAuthentication } = require('../lib/auth')
 const { Course } = require('../models/course')
+const { User } = require('../models/user')
 
 const router = Router()
 
@@ -223,8 +224,36 @@ router.get("/:courseId/students", requireAuthentication, async (req, res, next) 
  * 'instructor' User whose ID matches the instructorId of the
  * Course can update the students enrolled in the Course.
  */
-router.post("/:courseId/students", requireAuthentication, (req, res, next) => {
-    // TODO: Implement
+router.post("/:courseId/students", requireAuthentication, async (req, res, next) => {
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('students')
+
+        if (course) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                if (req.body.add && req.body.remove) {
+                    var students = course.students.filter(e => !req.body.remove.includes(e) )
+
+                    students.push(req.body.add)
+
+                    await Course.findByIdAndUpdate(req.params.courseId, { students: students })
+                    
+                    res.status(200).send()
+                } else {
+                    res.status(400).send({
+                        error: "The request body must include an add and remove item"
+                    })
+                }
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Fetch a CSV file containing list of the students enrolled in the Course.
@@ -236,8 +265,37 @@ router.post("/:courseId/students", requireAuthentication, (req, res, next) => {
  * matches the instructorId of the Course can fetch the course
  * roster.
  */
-router.get("/:courseId/roster", requireAuthentication, (req, res, next) => {
+router.get("/:courseId/roster", requireAuthentication, async (req, res, next) => {
     // TODO: Implement
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('students')
+
+        if (course) {
+            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
+                let students = ''
+
+                // course.students.array.forEach(element => {
+                for (const student of course.students) {
+                    const studentDetails = await User.findById(student)
+                    students += `${studentDetails._id},${studentDetails.name},${studentDetails.email}\n`
+                };
+
+                // console.log(students)
+
+                // TODO (maybe?) switch to actually send a file instead of text
+                res.type('text/csv')
+                res.status(200).send(students)
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to modify this resource"
+                })
+            }
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 // Fetch a list of the Assignments for the Course.
@@ -245,8 +303,20 @@ router.get("/:courseId/roster", requireAuthentication, (req, res, next) => {
  * Returns a list containing the Assignment IDs of all 
  * Assignments for the Course.
  */
-router.get("/:courseId/assignments", (req, res, next) => {
-    // TODO: Implement
+router.get("/:courseId/assignments", async (req, res, next) => {
+    if (req.params.courseId.length == 24) {
+        const course = await Course.findById(req.params.courseId).select('assignments')
+
+        if (course) {
+            res.status(200).send({
+                assignments: course.assignments
+            })
+        } else {
+            next()
+        }
+    } else {
+        next()
+    }
 })
 
 module.exports = router
