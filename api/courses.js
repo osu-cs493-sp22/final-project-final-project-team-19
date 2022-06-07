@@ -3,6 +3,7 @@ const { requireAuthentication } = require('../lib/auth')
 const { Course } = require('../models/course')
 const { User } = require('../models/user')
 const { Types } = require('mongoose')
+const { Assignment } = require('../models/assignment')
 
 const router = Router()
 
@@ -306,11 +307,14 @@ router.get("/:courseId/roster", requireAuthentication, async (req, res, next) =>
  */
 router.get("/:courseId/assignments", async (req, res, next) => {
     if (req.params.courseId.length == 24) {
-        const course = await Course.findById(req.params.courseId).select('assignments')
+
+        const course = await Course.findById(req.params.courseId)
 
         if (course) {
+            const assignments = await Assignment.find({ courseId: req.params.courseId}).select('_id title points due')
+
             res.status(200).send({
-                assignments: course.assignments
+                assignments: assignments
             })
         } else {
             next()
