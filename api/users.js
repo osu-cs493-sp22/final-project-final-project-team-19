@@ -101,7 +101,7 @@ router.post("/login", async (req, res, next) => {
  */
 router.get("/:userId", requireAuthentication, async (req, res, next) => {
     if(req.params.userId.length == 24) {
-        const user = await User.findById(req.params.userId).select('user email password role')
+        const user = await User.findById(req.params.userId).select('name email password role')
         console.log(user)
 
         if (user) {
