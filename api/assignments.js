@@ -6,6 +6,12 @@ const { Course } = require("../models/course");
 const { User } = require("../models/user");
 const { Submission } = require("../models/submission");
 
+
+//multer for uploading files
+const multer = require('multer')
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 const router = Router();
 
 // Create a new Assignment
@@ -202,15 +208,13 @@ router.get(
     requireAuthentication,
     async (req, res, next) => {
         if (req.params.assignmentId.length == 24) {
-            const course = await Course.findById(req.body.courseId);
+            const assignment = await Assignment.findById(req.params.assignmentId);
+            const course = await Course.findById(assignment.courseId);
             if (
                 req.user.role == "admin" ||
                 (req.user.role == "instructor" && course.instructorId == req.user._id)
             ) {
-                const submissions = await Submission.findById(
-                    req.params.assignmentId
-                ).select("submissions");
-
+                const submissions = await Submission.find({ assignmentId: req.params.assignmentId });
                 if (submissions) {
                     res.status(200).send(submissions);
                 } else {
@@ -235,8 +239,45 @@ router.get(
  * corresponding to the Assignment's courseId can create a
  * Submission.
  */
-router.post("/:assignmentId/submissions", (req, res, next) => {
-    // TODO: Implement
+router.post("/:assignmentId/submissions", requireAuthentication, upload.single("file"), async (req, res, next) => {
+    if (req.params.assignmentId.length == 24) {
+        const assignment = await Assignment.findById(req.params.assignmentId);
+        const course = await Course.findById(assignment.courseId);
+        if (req.user.role == "student" && course.students.includes(req.user._id)) {
+            try {
+                const fileNameTest = "test";
+                //check if the request has an image or not
+                if (!req.file) {
+                    res.json({
+                        success: false,
+                        message: "You must provide at least 1 file"
+                    });
+                } else {
+                    let fileObject = {
+                        file: {
+                            data: req.file.buffer,
+                            contentType: req.file.mimetype
+                        },
+                        fileName: fileNameTest,
+                        studentId: req.body.studentId,
+                        assignmentId: req.body.assignmentId,
+                    };
+                    const uploadObject = new Submission(fileObject);
+                    // saving the object into the database
+
+                    const uploadProcess = await uploadObject.save();
+                    res.status(200).send("sent");
+                }
+            } catch (error){
+                console.log(error)
+                res.status(500).send("Server Error");
+            }
+        }
+    } else {
+        res.status(403).send({
+            error: "You are not an authorized user to access this resource",
+        });
+    }
 });
 
 module.exports = router;
