@@ -15,8 +15,6 @@ const { userSchema, User } = require('../models/user')
  * 'instructor' roles. 
  */
 router.post('/', softAuthentication, async (req, res, next) => {
-    // TODO: verify role restrictions for creating users
-
     const newUser = new User(req.body)
     let error = newUser.validateSync();
     
