@@ -273,13 +273,13 @@ router.post("/:assignmentId/submissions", requireAuthentication, upload.single("
 
                     const uploadProcess = await uploadObject.save();
                 
-                    res.status(200).send({
+                    res.status(201).send({
                         id: uploadObject._id 
-                        });
+                    });
                 }
             } catch (error){
                 console.log(error)
-                res.status(500).send("Server Error");
+                res.status(400).send("Poorly formatted request");
             }
         } else {
             res.status(403).send({
