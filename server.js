@@ -1,5 +1,7 @@
 const express = require('express')
 const { connect } = require('./lib/mongoose')
+const { User } = require('./models/user')
+const jwt  = require('jsonwebtoken')
 const redis = require('redis')
 
 
@@ -19,8 +21,8 @@ const redisClient = redis.createClient({
   url: `redis://${redisUser}:${redisPassword}@${redisHost}:${redisPort}`
 })
 
-const rateLimitMaxRequests = 15
 const rateLimitWindowMs = 60000
+const secret = process.env.JWT_SECRET || 'badsecret'
 
 /*
 * Rate limiting function that works by a token bucket algorithm
@@ -28,10 +30,30 @@ const rateLimitWindowMs = 60000
 * Error if too many requests are made
 */
 async function rateLimit(req, res, next) {
-  const ip = req.ip
+  const authHeader = req.get('authorization') || ''
+  const authParts = authHeader.split(' ')
+  const token = authParts[0] === 'Bearer' ? authParts[1] : null
+  let rateLimitMaxRequests = -1
+  let ip = req.ip
+  try {
+    if(!token){
+      throw new Error('No token')
+    }
+    const payload = jwt.verify(token, secret)
+    req.userId = payload.sub
+    const user = await User.find({ _id: payload.sub })
+    if (user.length > 0) {
+      rateLimitMaxRequests = 30
+      ip = user[0].email
+    }
+    
+  } catch (err) {
+    rateLimitMaxRequests = 10
+  }
+  
 
   let tokenBucket = await redisClient.hGetAll(ip)
-  // console.log("== tokenBucket:", tokenBucket)
+  console.log("== tokenBucket:", tokenBucket)
   tokenBucket = {
     tokens: parseFloat(tokenBucket.tokens) || rateLimitMaxRequests,
     last: parseInt(tokenBucket.last) || Date.now()
