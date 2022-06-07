@@ -281,11 +281,13 @@ router.post("/:assignmentId/submissions", requireAuthentication, upload.single("
                 console.log(error)
                 res.status(500).send("Server Error");
             }
+        } else {
+            res.status(403).send({
+                error: "You are not authorized to access this resource",
+            });
         }
     } else {
-        res.status(403).send({
-            error: "You are not an authorized user to access this resource",
-        });
+        next()
     }
 });
 
