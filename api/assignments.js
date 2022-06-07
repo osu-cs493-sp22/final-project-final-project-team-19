@@ -1,60 +1,65 @@
-const { Router } = require('express')
-const { requireAuthentication } = require('../lib/auth')
-const { Assignment } = require('../models/assignment')
-const { Course } = require('../models/course')
-const { User } = require('../models/user')
+const { Router } = require("express");
+const req = require("express/lib/request");
+const { requireAuthentication } = require("../lib/auth");
+const { Assignment } = require("../models/assignment");
+const { Course } = require("../models/course");
+const { User } = require("../models/user");
+const { Submission } = require("../models/submission");
 
-
-const router = Router()
+const router = Router();
 
 // Create a new Assignment
 /*
- * Create and store a new Assignment with specified data and 
- * adds it to the application's database. Only an 
+ * Create and store a new Assignment with specified data and
+ * adds it to the application's database. Only an
  * authenticated User with 'admin' role or an authenticated
  * 'instructor' User whose ID matches the instructorId of the
  * Course corresponding to the Assignment's courseId can create
  * an Assignment.
  */
-router.post("/", requireAuthentication , async (req, res, next) => {
+router.post("/", requireAuthentication, async (req, res, next) => {
     if (req.body.courseId.length == 24) {
-        const course = await Course.findById(req.body.courseId)
-        if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
-            const newAssignment = new Assignment(req.body)
-            let error = newAssignment.validateSync()
+        const course = await Course.findById(req.body.courseId);
+        if (
+            req.user.role == "admin" ||
+            (req.user.role == "instructor" && course.instructorId == req.user._id)
+        ) {
+            const newAssignment = new Assignment(req.body);
+            let error = newAssignment.validateSync();
 
             if (!error) {
                 const assignments = await Assignment.find({
                     title: newAssignment.title,
                     points: newAssignment.points,
                     due: newAssignment.due,
-                    courseId: newAssignment.courseId
-                })
+                    courseId: newAssignment.courseId,
+                });
 
                 if (assignments.length <= 0) {
-                    await newAssignment.save()
+                    await newAssignment.save();
                     res.status(201).send({
-                        id: newAssignment._id
-                    })
+                        id: newAssignment._id,
+                    });
                 } else {
                     res.status(400).send({
-                        error: "A duplicate assignment already exists"
-                    })
+                        error: "A duplicate assignment already exists",
+                    });
                 }
             } else {
                 res.status(400).send({
-                    error: "The request body was either not present or did not contain a valid Assignment object."
-                })
+                    error:
+                        "The request body was either not present or did not contain a valid Assignment object.",
+                });
             }
         } else {
             res.status(403).send({
-                error: "You are not an authorized user to access this resource"
-            })
+                error: "You are not an authorized user to access this resource",
+            });
         }
     } else {
-        next()
+        next();
     }
-})
+});
 
 // Fetch data about a specific Assignment
 /*
@@ -63,130 +68,175 @@ router.post("/", requireAuthentication , async (req, res, next) => {
  */
 router.get("/:assignmentId", async (req, res, next) => {
     if (req.params.assignmentId.length == 24) {
-        const assignment = await Assignment.findOne({ _id: req.params.assignmentId }).select('title points due courseId')
+        const assignment = await Assignment.findOne({
+            _id: req.params.assignmentId,
+        }).select("title points due courseId");
 
         if (assignment) {
-            res.status(200).send(assignment)
+            res.status(200).send(assignment);
         } else {
-            next()
+            next();
         }
     } else {
-        next()
+        next();
     }
-})
+});
 
 // Update data for a specific Assignment
 /*
  * Performs a partial update on the data for the Assignment.
  * Note that submissions cannot be modified via this endpoint.
- * Only an authenticated User with 'admin' role or an 
+ * Only an authenticated User with 'admin' role or an
  * authenticated 'instructor' User whose ID matches the
  * instructorId of the Course corresponding to the Assignment's
  * courseId can update an Assignment.
  */
-router.patch("/:assignmentId", requireAuthentication, async (req, res, next) => {
-    if (req.params.assignmentId.length == 24 && req.body.courseId.length == 24) {
-        const course = await Course.findById(req.body.courseId)
-        const assignment = await Assignment.findById(req.params.assignmentId)
-        if (course && assignment) {
-            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
-                const updatedAssignment = new Assignment(req.body)
-                let error = updatedAssignment.validateSync() 
+router.patch(
+    "/:assignmentId",
+    requireAuthentication,
+    async (req, res, next) => {
+        if (
+            req.params.assignmentId.length == 24 &&
+            req.body.courseId.length == 24
+        ) {
+            const course = await Course.findById(req.body.courseId);
+            const assignment = await Assignment.findById(req.params.assignmentId);
+            if (course && assignment) {
+                if (
+                    req.user.role == "admin" ||
+                    (req.user.role == "instructor" && course.instructorId == req.user._id)
+                ) {
+                    const updatedAssignment = new Assignment(req.body);
+                    let error = updatedAssignment.validateSync();
 
-                if (!error) {
-                    const assignments = await Assignment.find({
-                        title: updatedAssignment.title,
-                        points: updatedAssignment.points,
-                        due: updatedAssignment.due,
-                        courseId: updatedAssignment.courseId
-                    })
-                    if (assignments.length == 0) {
-                        await Assignment.findByIdAndUpdate(req.params.assignmentId, 
-                            { 
+                    if (!error) {
+                        const assignments = await Assignment.find({
+                            title: updatedAssignment.title,
+                            points: updatedAssignment.points,
+                            due: updatedAssignment.due,
+                            courseId: updatedAssignment.courseId,
+                        });
+                        if (assignments.length == 0) {
+                            await Assignment.findByIdAndUpdate(req.params.assignmentId, {
                                 title: updatedAssignment.title,
                                 points: updatedAssignment.points,
                                 due: updatedAssignment.due,
-                                courseId: updatedAssignment.courseId
-                            })
-                        res.status(200).send()
+                                courseId: updatedAssignment.courseId,
+                            });
+                            res.status(200).send();
+                        } else {
+                            res.status(400).send({
+                                error:
+                                    "A duplicate assignment with these details already exists",
+                            });
+                        }
                     } else {
                         res.status(400).send({
-                            error: "A duplicate assignment with these details already exists"
-                        })
+                            error: "The request body must contain a valid Assignment object",
+                        });
                     }
                 } else {
-                    res.status(400).send({
-                        error: "The request body must contain a valid Assignment object"
-                    })
+                    res.status(403).send({
+                        error: "You are not authorized to modify this resource",
+                    });
                 }
             } else {
-                res.status(403).send({
-                    error: "You are not authorized to modify this resource"
-                })
+                next();
             }
         } else {
-            next()
+            next();
         }
-    } else {
-        next()
     }
-})
+);
 
 // Remove a specific Assignment from the database.
 /*
- * Completely removes the data for the specified Assignment, 
+ * Completely removes the data for the specified Assignment,
  * including all submissions. Only an authenticated User with
  * 'admin' role or an authenticated 'instructor' User whose ID
  * matches the instructorId of the Course corresponding to the
  * Assignment's courseId can delete an Assignment.
  */
-router.delete("/:assignmentId", requireAuthentication, async (req, res, next) => {
-    if (req.params.assignmentId.length == 24) {
-        const assignment = await Assignment.findById(req.params.assignmentId)
+router.delete(
+    "/:assignmentId",
+    requireAuthentication,
+    async (req, res, next) => {
+        if (req.params.assignmentId.length == 24) {
+            const assignment = await Assignment.findById(req.params.assignmentId);
 
-        if (assignment) {
-            const courseId = assignment.courseId
-            const course = await Course.findById(courseId)
+            if (assignment) {
+                const courseId = assignment.courseId;
+                const course = await Course.findById(courseId);
 
-            if (req.user.role == 'admin' || (req.user.role == 'instructor' && course.instructorId == req.user._id)) {
-                await Assignment.findByIdAndRemove(req.params.assignmentId)
-                res.status(204).send()
+                if (
+                    req.user.role == "admin" ||
+                    (req.user.role == "instructor" && course.instructorId == req.user._id)
+                ) {
+                    await Assignment.findByIdAndRemove(req.params.assignmentId);
+                    res.status(204).send();
+                } else {
+                    res.status(403).send({
+                        error: "You are not authorized to modify this resource",
+                    });
+                }
             } else {
-                res.status(403).send({
-                    error: "You are not authorized to modify this resource"
-                })
+                next();
             }
         } else {
-            next()
+            next();
         }
-    } else {
-        next()
     }
-})
+);
 
 // Fetch a list of the Assignments for a specific Course.
 /*
  * Returns the list of all Submissions for an Assignment. This
- * list should be paginated. Only an authenticated User with 
+ * list should be paginated. Only an authenticated User with
  * 'admin' role or an authenticated 'instructor' User whose ID
  * matches the instructorId of the Course corresponding to the
- * Assignment's courseId can fetch the Submissions for an 
+ * Assignment's courseId can fetch the Submissions for an
  * Assignment.
  */
-router.get("/:assignmentId/submissions", (req, res, next) => {
-    // TODO: Implement
-})
+router.get(
+    "/:assignmentId/submissions",
+    requireAuthentication,
+    async (req, res, next) => {
+        if (req.params.assignmentId.length == 24) {
+            const course = await Course.findById(req.body.courseId);
+            if (
+                req.user.role == "admin" ||
+                (req.user.role == "instructor" && course.instructorId == req.user._id)
+            ) {
+                const submissions = await Submission.findById(
+                    req.params.assignmentId
+                ).select("submissions");
+
+                if (submissions) {
+                    res.status(200).send(submissions);
+                } else {
+                    next();
+                }
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to view this resource",
+                });
+            }
+        } else {
+            next();
+        }
+    }
+);
 
 // Create a new Submission for an Assignment.
 /*
- * Create and store a new Assignment with specified data and 
- * adds it to the application's database. Only an authenticated 
- * User with 'student' role who is enrolled in the Course 
- * corresponding to the Assignment's courseId can create a 
+ * Create and store a new Assignment with specified data and
+ * adds it to the application's database. Only an authenticated
+ * User with 'student' role who is enrolled in the Course
+ * corresponding to the Assignment's courseId can create a
  * Submission.
  */
 router.post("/:assignmentId/submissions", (req, res, next) => {
     // TODO: Implement
-})
+});
 
-module.exports = router
+module.exports = router;
