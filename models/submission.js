@@ -28,6 +28,9 @@ const submissionSchema = new Schema({
         data: Buffer,
         contentType: String,
     },
+    url: {
+        type: String,
+    }
 });
 exports.submissionSchema = submissionSchema;
 

@@ -5,6 +5,7 @@ const { Assignment } = require("../models/assignment");
 const { Course } = require("../models/course");
 const { User } = require("../models/user");
 const { Submission } = require("../models/submission");
+const { Types } = require("mongoose");
 
 
 //multer for uploading files
@@ -214,7 +215,7 @@ router.get(
                 req.user.role == "admin" ||
                 (req.user.role == "instructor" && course.instructorId == req.user._id)
             ) {
-                const submissions = await Submission.find({ assignmentId: req.params.assignmentId });
+                const submissions = await Submission.find({ assignmentId: req.params.assignmentId }).select("assignmentId studentId submittedTime grade url");
                 if (submissions) {
                     res.status(200).send(submissions);
                 } else {
@@ -245,7 +246,6 @@ router.post("/:assignmentId/submissions", requireAuthentication, upload.single("
         const course = await Course.findById(assignment.courseId);
         if (req.user.role == "student" && course.students.includes(req.user._id)) {
             try {
-                const fileNameTest = "test";
                 //check if the request has an image or not
                 if (!req.file) {
                     res.json({
@@ -253,20 +253,29 @@ router.post("/:assignmentId/submissions", requireAuthentication, upload.single("
                         message: "You must provide at least 1 file"
                     });
                 } else {
+                    const Id = new Types.ObjectId();
                     let fileObject = {
+                        _id: Id,
                         file: {
                             data: req.file.buffer,
                             contentType: req.file.mimetype
                         },
-                        fileName: fileNameTest,
+                        fileName: req.file.originalname,
                         studentId: req.body.studentId,
                         assignmentId: req.body.assignmentId,
-                    };
+                        url: `/assignments/${req.params.assignmentId}/submissions/${Id}`
+                
+                    }
+                  
                     const uploadObject = new Submission(fileObject);
+               
                     // saving the object into the database
 
                     const uploadProcess = await uploadObject.save();
-                    res.status(200).send("sent");
+                
+                    res.status(200).send({
+                        id: uploadObject._id 
+                        });
                 }
             } catch (error){
                 console.log(error)
@@ -279,5 +288,33 @@ router.post("/:assignmentId/submissions", requireAuthentication, upload.single("
         });
     }
 });
+
+router.get(
+    "/:assignmentId/submissions/:submissionId",
+    requireAuthentication,
+    async (req, res, next) => {
+        if (req.params.assignmentId.length == 24 && req.params.submissionId.length == 24) {
+            const assignment = await Assignment.findById(req.params.assignmentId);
+            const course = await Course.findById(assignment.courseId);
+            if (
+                req.user.role == "admin" ||
+                (req.user.role == "instructor" && course.instructorId == req.user._id)
+            ) {
+                const submissions = await Submission.findById(req.params.submissionId).select("file fileName")
+                if (submissions) {
+                    res.attachment(submissions.fileName).send(submissions.file.data);
+                } else {
+                    next();
+                }
+            } else {
+                res.status(403).send({
+                    error: "You are not authorized to view this resource",
+                });
+            }
+        } else {
+            next();
+        }
+    }
+);
 
 module.exports = router;
