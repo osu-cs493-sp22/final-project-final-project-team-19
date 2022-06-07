@@ -9,7 +9,7 @@ const app = express()
 const port = process.env.PORT || 8000
 
 // redis env variables
-const redisHost = process.env.REDIS_HOST || 'redis'
+const redisHost = process.env.REDIS_HOST || 'localhost'
 const redisPort = process.env.REDIS_PORT || 6379
 const redisUser = process.env.REDIS_USER || 'default';
 const redisPassword = process.env.REDIS_PASSWORD || 'hunter2';
