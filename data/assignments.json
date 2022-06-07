@@ -1,0 +1,72 @@
+[
+    {
+        "_id": "629ea1cf382a336495a5ed80",
+        "courseId": "629e9c3c9fd9f2d1d1f7f860",
+        "title": "Assignment 1",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed81",
+        "courseId": "629e9c3c9fd9f2d1d1f7f860",
+        "title": "Assignment 2",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed82",
+        "courseId": "629e9c3c9fd9f2d1d1f7f860",
+        "title": "Assignment 3",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed83",
+        "courseId": "629e9c3c9fd9f2d1d1f7f861",
+        "title": "Assignment 1",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed84",
+        "courseId": "629e9c3c9fd9f2d1d1f7f861",
+        "title": "Assignment 2",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed85",
+        "courseId": "629e9c3c9fd9f2d1d1f7f861",
+        "title": "Assignment 3",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed86",
+        "courseId": "629e9c3c9fd9f2d1d1f7f862",
+        "title": "Assignment 1",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed87",
+        "courseId": "629e9c3c9fd9f2d1d1f7f862",
+        "title": "Assignment 2",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed88",
+        "courseId": "629e9c3c9fd9f2d1d1f7f862",
+        "title": "Assignment 3",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    },
+    {
+        "_id": "629ea1cf382a336495a5ed89",
+        "courseId": "629e9c3c9fd9f2d1d1f7f863",
+        "title": "Assignment 1",
+        "points": "100",
+        "due": "2022-06-14T17:00:00-07:00"
+    }
+]

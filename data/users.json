@@ -1,0 +1,72 @@
+[
+    {
+        "_id": "629e99abf1b1a3f4070eb680",
+        "name": "John Admin",
+        "email": "john1@oregonstate.edu",
+        "password": "hunter2",
+        "role": "admin"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb681",
+        "name": "Rob Hess",
+        "email": "hessro@oregonstate.edu",
+        "password": "hunter2",
+        "role": "instructor"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb682",
+        "name": "Mike Bailey",
+        "email": "mjb@oregonstate.edu",
+        "password": "hunter2",
+        "role": "instructor"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb683",
+        "name": "Yeongjin Jang",
+        "email": "yeongjin.jang@oregonstate.edu",
+        "password": "hunter2",
+        "role": "instructor"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb684",
+        "name": "John Student 1",
+        "email": "john5@oregonstate.edu",
+        "password": "hunter2",
+        "role": "student"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb685",
+        "name": "John Student 1",
+        "email": "john6@oregonstate.edu",
+        "password": "hunter2",
+        "role": "student"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb686",
+        "name": "John Student 1",
+        "email": "john7@oregonstate.edu",
+        "password": "hunter2",
+        "role": "student"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb687",
+        "name": "John Student 1",
+        "email": "john8@oregonstate.edu",
+        "password": "hunter2",
+        "role": "student"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb688",
+        "name": "John Student 1",
+        "email": "john9@oregonstate.edu",
+        "password": "hunter2",
+        "role": "student"
+    },
+    {
+        "_id": "629e99abf1b1a3f4070eb689",
+        "name": "John Student 1",
+        "email": "john10@oregonstate.edu",
+        "password": "hunter2",
+        "role": "student"
+    }
+]

@@ -26,6 +26,20 @@ services:
       - MONGO_PASSWORD=hunter2
     ports: # this is removable in production building
       - 27017:27017
+
+  db-init:
+    build: .
+    environment:
+      - DB_HOSTNAME=mongodb
+      - DB_USERNAME=root
+      - DB_PASSWORD=hunter2
+      - DB_NAME=final-project
+    depends_on:
+      - mongodb
+    restart: on-failure
+    command: npm run initdb
+      
+
   redis:
     image: redis:latest
     environment: 
