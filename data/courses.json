@@ -5,7 +5,13 @@
         "number": "492",
         "title": "Mobile Software Development",
         "term": "w22",
-        "instructorId": "629e99abf1b1a3f4070eb681"
+        "instructorId": "629e99abf1b1a3f4070eb681",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb688",
+            "629e99abf1b1a3f4070eb689"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f861",
@@ -13,7 +19,14 @@
         "number": "499",
         "title": "Advanced Web Dev",
         "term": "w22",
-        "instructorId": "629e99abf1b1a3f4070eb681"
+        "instructorId": "629e99abf1b1a3f4070eb681",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb686",
+            "629e99abf1b1a3f4070eb688",
+            "629e99abf1b1a3f4070eb689"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f862",
@@ -21,7 +34,12 @@
         "number": "493",
         "title": "Cloud Application Development",
         "term": "sp22",
-        "instructorId": "629e99abf1b1a3f4070eb681"
+        "instructorId": "629e99abf1b1a3f4070eb681",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb686"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f863",
@@ -29,7 +47,14 @@
         "number": "491",
         "title": "Simulation and Game Programming",
         "term": "f22",
-        "instructorId": "629e99abf1b1a3f4070eb682"
+        "instructorId": "629e99abf1b1a3f4070eb682",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb686",
+            "629e99abf1b1a3f4070eb687",
+            "629e99abf1b1a3f4070eb688"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f864",
@@ -37,7 +62,13 @@
         "number": "475",
         "title": "Introduction to Parallel Programming",
         "term": "sp22",
-        "instructorId": "629e99abf1b1a3f4070eb682"
+        "instructorId": "629e99abf1b1a3f4070eb682",
+        "students": [
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb687",
+            "629e99abf1b1a3f4070eb688",
+            "629e99abf1b1a3f4070eb689"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f865",
@@ -45,7 +76,11 @@
         "number": "450",
         "title": "Introduction to Computer Graphics",
         "term": "f22",
-        "instructorId": "629e99abf1b1a3f4070eb682"
+        "instructorId": "629e99abf1b1a3f4070eb682",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb686"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f866",
@@ -53,7 +88,13 @@
         "number": "444",
         "title": "Operating Systems II",
         "term": "f22",
-        "instructorId": "629e99abf1b1a3f4070eb683"
+        "instructorId": "629e99abf1b1a3f4070eb683",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb688",
+            "629e99abf1b1a3f4070eb689"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f867",
@@ -61,7 +102,12 @@
         "number": "370",
         "title": "Introduction to Security",
         "term": "f22",
-        "instructorId": "629e99abf1b1a3f4070eb683"
+        "instructorId": "629e99abf1b1a3f4070eb683",
+        "students": [
+            "629e99abf1b1a3f4070eb684",
+            "629e99abf1b1a3f4070eb685",
+            "629e99abf1b1a3f4070eb689"
+        ]
     },
     {
         "_id": "629e9c3c9fd9f2d1d1f7f868",
@@ -69,6 +115,10 @@
         "number": "499",
         "title": "Cyber Attacks And Defense",
         "term": "f22",
-        "instructorId": "629e99abf1b1a3f4070eb683"
+        "instructorId": "629e99abf1b1a3f4070eb683",
+        "students": [
+            "629e99abf1b1a3f4070eb688",
+            "629e99abf1b1a3f4070eb689"
+        ]
     }
 ]

@@ -36,35 +36,35 @@
     },
     {
         "_id": "629e99abf1b1a3f4070eb685",
-        "name": "John Student 1",
+        "name": "John Student 2",
         "email": "john6@oregonstate.edu",
         "password": "hunter2",
         "role": "student"
     },
     {
         "_id": "629e99abf1b1a3f4070eb686",
-        "name": "John Student 1",
+        "name": "John Student 3",
         "email": "john7@oregonstate.edu",
         "password": "hunter2",
         "role": "student"
     },
     {
         "_id": "629e99abf1b1a3f4070eb687",
-        "name": "John Student 1",
+        "name": "John Student 4",
         "email": "john8@oregonstate.edu",
         "password": "hunter2",
         "role": "student"
     },
     {
         "_id": "629e99abf1b1a3f4070eb688",
-        "name": "John Student 1",
+        "name": "John Student 5",
         "email": "john9@oregonstate.edu",
         "password": "hunter2",
         "role": "student"
     },
     {
         "_id": "629e99abf1b1a3f4070eb689",
-        "name": "John Student 1",
+        "name": "John Student 6",
         "email": "john10@oregonstate.edu",
         "password": "hunter2",
         "role": "student"
