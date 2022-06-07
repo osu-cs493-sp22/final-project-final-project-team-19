@@ -27,7 +27,8 @@ router.post("/", requireAuthentication , async (req, res, next) => {
                 const assignments = await Assignment.find({
                     title: newAssignment.title,
                     points: newAssignment.points,
-                    due: newAssignment.due
+                    due: newAssignment.due,
+                    courseId: newAssignment.courseId
                 })
 
                 if (assignments.length <= 0) {
@@ -96,7 +97,8 @@ router.patch("/:assignmentId", requireAuthentication, async (req, res, next) => 
                     const assignments = await Assignment.find({
                         title: updatedAssignment.title,
                         points: updatedAssignment.points,
-                        due: updatedAssignment.due
+                        due: updatedAssignment.due,
+                        courseId: updatedAssignment.courseId
                     })
                     if (assignments.length == 0) {
                         await Assignment.findByIdAndUpdate(req.params.assignmentId, 
