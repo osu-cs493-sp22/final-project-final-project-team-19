@@ -62,7 +62,7 @@ router.post("/", requireAuthentication , async (req, res, next) => {
  */
 router.get("/:assignmentId", async (req, res, next) => {
     if (req.params.assignmentId.length == 24) {
-        const assignment = await Assignment.findOne({ _id: req.params.assignmentId }).select('title points due')
+        const assignment = await Assignment.findOne({ _id: req.params.assignmentId }).select('title points due courseId')
 
         if (assignment) {
             res.status(200).send(assignment)
@@ -103,7 +103,8 @@ router.patch("/:assignmentId", requireAuthentication, async (req, res, next) => 
                             { 
                                 title: updatedAssignment.title,
                                 points: updatedAssignment.points,
-                                due: updatedAssignment.due
+                                due: updatedAssignment.due,
+                                courseId: updatedAssignment.courseId
                             })
                         res.status(200).send()
                     } else {

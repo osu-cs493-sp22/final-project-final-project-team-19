@@ -2,10 +2,9 @@ const { Schema, mongoose } = require('mongoose');
 
 const assignmentSchema = new Schema({
     courseId: {
-        type: {
-            type: Schema.Types.ObjectId,
-            ref: 'Course'
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Course',
+        required: true
     },
     title: {
         type: String,
