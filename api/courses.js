@@ -129,7 +129,9 @@ router.patch("/:courseId", requireAuthentication, async (req, res, next) => {
                     const courses = await Course.find({
                         subject: updatedCourse.subject,
                         number: updatedCourse.number,
-                        term: updatedCourse.term
+                        title: updatedCourse.title,
+                        term: updatedCourse.term,
+                        instructorId: updatedCourse.instructorId
                     })
                     if (courses.length == 0) {
                         await Course.findByIdAndUpdate(req.params.courseId, 
@@ -137,7 +139,8 @@ router.patch("/:courseId", requireAuthentication, async (req, res, next) => {
                                 subject: updatedCourse.subject,
                                 number: updatedCourse.number,
                                 title: updatedCourse.title,
-                                term: updatedCourse.term
+                                term: updatedCourse.term,
+                                instructorId: updatedCourse.instructorId
                             })
                         res.status(200).send()
                     } else {
